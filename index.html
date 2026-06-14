@@ -1,0 +1,240 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>C.O.C | Crater of creator</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <svg class="svg-defs" aria-hidden="true" focusable="false">
+      <symbol id="coc-logo-symbol" viewBox="0 0 320 330">
+        <g class="logo-sketch" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+          <text x="160" y="52" fill="currentColor" stroke="none" text-anchor="middle" font-family="Arial Black, Arial, sans-serif" font-size="43">COC</text>
+          <path d="M55 170c35-37 164-82 225-54 23 11-10 43-77 66-73 25-153 28-181 12-17-10-3-24 33-43" stroke-width="6" opacity="0.74" />
+          <path d="M43 178c58-18 151-35 230-25" stroke-width="3" opacity="0.62" />
+          <path d="M111 119c30-30 86-29 116 3 26 29 26 79-4 108-31 31-86 31-116-1-29-31-27-81 4-110z" stroke-width="7" />
+          <path d="M116 196c23 13 68 15 104-5" stroke-width="4" opacity="0.7" />
+          <path d="M123 143c31-9 69-9 94 6" stroke-width="3" opacity="0.46" />
+          <path d="M135 124c5 3 10 5 16 6M180 125c6-2 12-3 20-2M115 164c7-3 14-5 22-6M205 171c8 1 15 3 21 6M139 217c8 2 16 3 25 3" stroke-width="3" opacity="0.58" />
+          <ellipse cx="164" cy="168" rx="31" ry="24" stroke-width="7" />
+          <ellipse cx="164" cy="168" rx="18" ry="13" stroke-width="3" opacity="0.62" />
+          <text x="160" y="276" fill="currentColor" stroke="none" text-anchor="middle" font-family="Arial, sans-serif" font-size="25">CRATER</text>
+          <text x="160" y="300" fill="currentColor" stroke="none" text-anchor="middle" font-family="Arial, sans-serif" font-size="11">OF</text>
+          <text x="160" y="322" fill="currentColor" stroke="none" text-anchor="middle" font-family="Arial, sans-serif" font-size="25">CREATOR</text>
+        </g>
+      </symbol>
+    </svg>
+    <header class="site-header" aria-label="Main navigation">
+      <a class="brand" href="#" aria-label="C.O.C Crater of creator home">
+        <svg class="brand-mark" viewBox="0 0 320 330" aria-hidden="true"><use href="#coc-logo-symbol"></use></svg>
+        <span>C.O.C</span>
+      </a>
+      <nav class="nav-links" aria-label="Shop categories">
+        <a href="#drops">Drops</a>
+        <a href="#fit">Fit</a>
+        <a href="#studio">Studio</a>
+      </nav>
+      <button class="cart-button" type="button" aria-label="Open cart">
+        <span class="cart-mark">Bag</span>
+        <span id="cartCount" class="cart-count">0</span>
+      </button>
+    </header>
+
+    <main>
+      <section class="hero" aria-label="Featured 3D T-shirt">
+        <div class="scene-stage">
+          <canvas id="shirtScene" aria-label="3D preview of the featured T-shirt"></canvas>
+          <div id="sceneFallback" class="scene-fallback" hidden>
+            <span>C.O.C</span>
+          </div>
+        </div>
+
+        <div class="hero-copy">
+          <p class="drop-label">Crater of creator / Drop 06</p>
+          <h1 class="hero-logo-title">
+            <span class="sr-only">C.O.C Crater of creator</span>
+            <svg class="hero-logo" viewBox="0 0 320 330" aria-hidden="true"><use href="#coc-logo-symbol"></use></svg>
+          </h1>
+          <p class="hero-line">
+            창작자의 흔적을 입는 티셔츠. 260gsm 코튼, 짧은 기장, 여유로운 숄더, 선명한 그래픽.
+          </p>
+          <div class="hero-actions" aria-label="Primary actions">
+            <button id="heroAddToBag" class="primary-action" type="button">Add to Bag</button>
+            <a class="secondary-action" href="#drops">View Drop</a>
+          </div>
+        </div>
+
+        <div class="desktop-dock" aria-label="Quick links">
+          <a href="#drops">
+            <span class="dock-icon icon-shop"></span>
+            <strong>SHOP</strong>
+          </a>
+          <a href="#fit">
+            <span class="dock-icon icon-fit"></span>
+            <strong>FIT</strong>
+          </a>
+          <a href="#drops">
+            <span class="dock-icon icon-drop"></span>
+            <strong>DROP</strong>
+          </a>
+          <button type="button" id="dockBag">
+            <span class="dock-icon icon-bag"></span>
+            <strong>BAG</strong>
+          </button>
+        </div>
+
+        <aside class="product-panel" aria-label="Product options">
+          <svg class="panel-logo" viewBox="0 0 320 330" aria-hidden="true"><use href="#coc-logo-symbol"></use></svg>
+          <div class="product-heading">
+            <p class="eyebrow">Featured Tee</p>
+            <h2 id="productName">After Hours Tee</h2>
+            <p id="productPrice" class="price">₩49,000</p>
+          </div>
+
+          <div class="selection-strip" aria-label="Current selection">
+            <div>
+              <span>Color</span>
+              <strong id="selectedColorName">Blacktop</strong>
+            </div>
+            <div>
+              <span>Size</span>
+              <strong id="selectedSize">M</strong>
+            </div>
+            <div>
+              <span>Ship</span>
+              <strong>24h</strong>
+            </div>
+          </div>
+
+          <div class="control-block" aria-label="Color">
+            <div class="control-row">
+              <span class="control-label">Color</span>
+              <span id="selectedColorLabel">Blacktop</span>
+            </div>
+            <div class="swatches" id="swatches">
+              <button class="swatch is-active" type="button" data-color="#151515" data-name="Blacktop" aria-label="Blacktop" style="--swatch: #151515"></button>
+              <button class="swatch" type="button" data-color="#f0eee5" data-name="Bone" aria-label="Bone" style="--swatch: #f0eee5"></button>
+              <button class="swatch" type="button" data-color="#b7ff3c" data-name="Acid Lime" aria-label="Acid Lime" style="--swatch: #b7ff3c"></button>
+              <button class="swatch" type="button" data-color="#eb4d37" data-name="Heat" aria-label="Heat" style="--swatch: #eb4d37"></button>
+            </div>
+          </div>
+
+          <div class="control-block" aria-label="Size">
+            <div class="control-row">
+              <span class="control-label">Size</span>
+              <span id="selectedSizeLabel">M</span>
+            </div>
+            <div class="size-grid" id="sizes">
+              <button type="button">S</button>
+              <button type="button" class="is-active">M</button>
+              <button type="button">L</button>
+              <button type="button">XL</button>
+            </div>
+          </div>
+
+          <div class="metrics">
+            <div>
+              <span>Weight</span>
+              <strong>260gsm</strong>
+            </div>
+            <div>
+              <span>Fit</span>
+              <strong>Boxy</strong>
+            </div>
+            <div>
+              <span>Stock</span>
+              <strong>42</strong>
+            </div>
+          </div>
+
+          <div class="stock-meter" aria-label="Stock status">
+            <span></span>
+            <strong>42 left in this drop</strong>
+          </div>
+
+          <button id="addToBag" class="buy-button" type="button">Add to Bag</button>
+        </aside>
+      </section>
+
+      <section id="drops" class="drop-section" aria-label="Latest drops">
+        <div class="section-heading">
+          <p class="eyebrow">New Rotation</p>
+          <h2>Street-ready graphic tees</h2>
+        </div>
+        <div class="tee-grid">
+          <article class="tee-card is-selected" data-product="After Hours Tee" data-color="#151515" data-color-name="Blacktop" data-price="₩49,000">
+            <div class="tee-visual visual-black"><span>AFTER<br />HOURS</span></div>
+            <div class="tee-meta">
+              <h3>After Hours Tee</h3>
+              <span>₩49,000</span>
+            </div>
+          </article>
+          <article class="tee-card" data-product="Signal Tee" data-color="#b7ff3c" data-color-name="Acid Lime" data-price="₩52,000">
+            <div class="tee-visual visual-lime"><span>SIGNAL<br />CLUB</span></div>
+            <div class="tee-meta">
+              <h3>Signal Tee</h3>
+              <span>₩52,000</span>
+            </div>
+          </article>
+          <article class="tee-card" data-product="Concrete Tee" data-color="#f0eee5" data-color-name="Bone" data-price="₩47,000">
+            <div class="tee-visual visual-bone"><span>CONCRETE<br />FLOW</span></div>
+            <div class="tee-meta">
+              <h3>Concrete Tee</h3>
+              <span>₩47,000</span>
+            </div>
+          </article>
+          <article class="tee-card" data-product="Heat Check Tee" data-color="#eb4d37" data-color-name="Heat" data-price="₩55,000">
+            <div class="tee-visual visual-heat"><span>HEAT<br />CHECK</span></div>
+            <div class="tee-meta">
+              <h3>Heat Check Tee</h3>
+              <span>₩55,000</span>
+            </div>
+          </article>
+        </div>
+      </section>
+
+      <section id="fit" class="fit-section" aria-label="Fit details">
+        <div class="fit-copy">
+          <p class="eyebrow">Fit System</p>
+          <h2>짧은 기장, 넓은 어깨, 탄탄한 넥라인.</h2>
+        </div>
+        <div class="fit-list">
+          <div>
+            <span>01</span>
+            <strong>Drop shoulder</strong>
+          </div>
+          <div>
+            <span>02</span>
+            <strong>Double stitched neck</strong>
+          </div>
+          <div>
+            <span>03</span>
+            <strong>Pre-shrunk cotton</strong>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <div id="toast" class="toast" role="status" aria-live="polite">Bag updated</div>
+    <div class="sticky-buy" aria-label="Quick purchase">
+      <div>
+        <strong id="stickyProductName">After Hours Tee</strong>
+        <span id="stickySelection">Blacktop / M</span>
+      </div>
+      <button id="stickyAddToBag" type="button">
+        <span id="stickyPrice">₩49,000</span>
+        <span>Add</span>
+      </button>
+    </div>
+
+    <script type="importmap">
+      {
+        "imports": {
+          "three": "https://unpkg.com/three@0.165.0/build/three.module.js"
+        }
+      }
+    </script>
+    <script type="module" src="./main.js"></script>
+  </body>
+</html>
