@@ -3,11 +3,13 @@ const state = {
   colorName: "Blacktop",
   productName: "After Hours Tee",
   price: "₩49,000",
-  bagCount: 0,
   size: "M",
+  cartItems: [],
+  isCartOpen: false,
 };
 
 let threeApi = null;
+let toastTimer = null;
 
 initShopControls();
 loadScene();
@@ -27,110 +29,278 @@ async function loadScene() {
 }
 
 function initShopControls() {
-  const swatches = document.querySelectorAll(".swatch");
-  const sizeButtons = document.querySelectorAll("#sizes button");
-  const cards = document.querySelectorAll(".tee-card");
-  const addButton = document.querySelector("#addToBag");
-  const heroAddButton = document.querySelector("#heroAddToBag");
-  const stickyAddButton = document.querySelector("#stickyAddToBag");
-  const dockBag = document.querySelector("#dockBag");
-  const cartCount = document.querySelector("#cartCount");
-  const productName = document.querySelector("#productName");
-  const productPrice = document.querySelector("#productPrice");
-  const selectedColorName = document.querySelector("#selectedColorName");
-  const selectedSize = document.querySelector("#selectedSize");
-  const selectedColorLabel = document.querySelector("#selectedColorLabel");
-  const selectedSizeLabel = document.querySelector("#selectedSizeLabel");
-  const stickyProductName = document.querySelector("#stickyProductName");
-  const stickySelection = document.querySelector("#stickySelection");
-  const stickyPrice = document.querySelector("#stickyPrice");
-  const toast = document.querySelector("#toast");
+  const elements = getShopElements();
 
-  swatches.forEach((button) => {
+  elements.swatches.forEach((button) => {
     button.addEventListener("click", () => {
-      swatches.forEach((item) => item.classList.remove("is-active"));
+      elements.swatches.forEach((item) => item.classList.remove("is-active"));
       button.classList.add("is-active");
       state.color = button.dataset.color || state.color;
       state.colorName = button.dataset.name || state.colorName;
       threeApi?.setColor(state.color, state.productName);
       renderSelection();
+      syncPressedStates(elements);
     });
   });
 
-  sizeButtons.forEach((button) => {
+  elements.sizeButtons.forEach((button) => {
     button.addEventListener("click", () => {
-      sizeButtons.forEach((item) => item.classList.remove("is-active"));
+      elements.sizeButtons.forEach((item) => item.classList.remove("is-active"));
       button.classList.add("is-active");
       state.size = button.textContent?.trim() || state.size;
       renderSelection();
+      syncPressedStates(elements);
     });
   });
 
-  cards.forEach((card) => {
-    card.addEventListener("click", () => {
-      const nextName = card.dataset.product || state.productName;
-      const nextColor = card.dataset.color || state.color;
-      const nextColorName = card.dataset.colorName || getColorName(nextColor);
-      const nextPrice = card.dataset.price || state.price;
-      state.productName = nextName;
-      state.color = nextColor;
-      state.colorName = nextColorName;
-      state.price = nextPrice;
-      cards.forEach((item) => item.classList.remove("is-selected"));
-      card.classList.add("is-selected");
-      swatches.forEach((item) => {
-        item.classList.toggle("is-active", item.dataset.color === nextColor);
-      });
-      threeApi?.setColor(nextColor, nextName);
-      renderSelection();
-      window.scrollTo({ top: 0, behavior: "smooth" });
+  elements.cards.forEach((card) => {
+    const selectCard = () => {
+      selectProduct(card, elements);
+    };
+
+    card.addEventListener("click", selectCard);
+    card.addEventListener("keydown", (event) => {
+      if (event.key !== "Enter" && event.key !== " ") return;
+      event.preventDefault();
+      selectCard();
     });
   });
 
-  addButton?.addEventListener("click", () => {
-    addToBag();
+  [elements.addButton, elements.heroAddButton, elements.stickyAddButton].forEach((button) => {
+    button?.addEventListener("click", () => {
+      addToBag(elements);
+    });
   });
 
-  heroAddButton?.addEventListener("click", () => {
-    addToBag();
+  elements.cartToggle?.addEventListener("click", () => {
+    setCartOpen(!state.isCartOpen, elements);
   });
 
-  stickyAddButton?.addEventListener("click", () => {
-    addToBag();
+  elements.dockBag?.addEventListener("click", () => {
+    setCartOpen(true, elements);
   });
 
-  dockBag?.addEventListener("click", () => {
-    addToBag();
+  elements.cartClose?.addEventListener("click", () => {
+    setCartOpen(false, elements);
+  });
+
+  elements.cartOverlay?.addEventListener("click", () => {
+    setCartOpen(false, elements);
+  });
+
+  elements.cartItems?.addEventListener("click", (event) => {
+    updateCartQuantity(event, elements);
+  });
+
+  elements.checkoutButton?.addEventListener("click", () => {
+    showToast("Drop reserved");
+    setCartOpen(false, elements);
+  });
+
+  document.addEventListener("keydown", (event) => {
+    if (event.key === "Escape") {
+      setCartOpen(false, elements);
+    }
   });
 
   renderSelection();
+  renderCart(elements);
+  syncPressedStates(elements);
+}
 
-  function addToBag() {
-    state.bagCount += 1;
-    if (cartCount) {
-      cartCount.textContent = String(state.bagCount);
-    }
-    if (toast) {
-      toast.textContent = `${state.productName} / ${state.size}`;
-      toast.classList.add("is-visible");
-      window.clearTimeout(initShopControls.toastTimer);
-      initShopControls.toastTimer = window.setTimeout(() => {
-        toast.classList.remove("is-visible");
-      }, 1700);
-    }
+function getShopElements() {
+  return {
+    swatches: document.querySelectorAll(".swatch"),
+    sizeButtons: document.querySelectorAll("#sizes button"),
+    cards: document.querySelectorAll(".tee-card"),
+    addButton: document.querySelector("#addToBag"),
+    heroAddButton: document.querySelector("#heroAddToBag"),
+    stickyAddButton: document.querySelector("#stickyAddToBag"),
+    dockBag: document.querySelector("#dockBag"),
+    cartToggle: document.querySelector("#cartToggle"),
+    cartClose: document.querySelector("#cartClose"),
+    cartOverlay: document.querySelector("#cartOverlay"),
+    cartDrawer: document.querySelector("#cartDrawer"),
+    cartItems: document.querySelector("#cartItems"),
+    cartEmpty: document.querySelector("#cartEmpty"),
+    cartTotal: document.querySelector("#cartTotal"),
+    cartCount: document.querySelector("#cartCount"),
+    checkoutButton: document.querySelector("#cartCheckout"),
+    productName: document.querySelector("#productName"),
+    productPrice: document.querySelector("#productPrice"),
+    selectedColorName: document.querySelector("#selectedColorName"),
+    selectedSize: document.querySelector("#selectedSize"),
+    selectedColorLabel: document.querySelector("#selectedColorLabel"),
+    selectedSizeLabel: document.querySelector("#selectedSizeLabel"),
+    stickyProductName: document.querySelector("#stickyProductName"),
+    stickySelection: document.querySelector("#stickySelection"),
+    stickyPrice: document.querySelector("#stickyPrice"),
+  };
+}
+
+function selectProduct(card, elements) {
+  const nextName = card.dataset.product || state.productName;
+  const nextColor = card.dataset.color || state.color;
+  const nextColorName = card.dataset.colorName || getColorName(nextColor);
+  const nextPrice = card.dataset.price || state.price;
+  state.productName = nextName;
+  state.color = nextColor;
+  state.colorName = nextColorName;
+  state.price = nextPrice;
+
+  elements.cards.forEach((item) => item.classList.remove("is-selected"));
+  card.classList.add("is-selected");
+  elements.swatches.forEach((item) => {
+    item.classList.toggle("is-active", item.dataset.color === nextColor);
+  });
+
+  threeApi?.setColor(nextColor, nextName);
+  renderSelection();
+  syncPressedStates(elements);
+  window.scrollTo({ top: 0, behavior: "smooth" });
+}
+
+function addToBag(elements) {
+  const id = [state.productName, state.colorName, state.size].join("|");
+  const existingItem = state.cartItems.find((item) => item.id === id);
+
+  if (existingItem) {
+    existingItem.quantity += 1;
+  } else {
+    state.cartItems.push({
+      id,
+      name: state.productName,
+      color: state.color,
+      colorName: state.colorName,
+      size: state.size,
+      price: state.price,
+      priceValue: parseWon(state.price),
+      quantity: 1,
+    });
   }
 
-  function renderSelection() {
-    if (productName) productName.textContent = state.productName;
-    if (productPrice) productPrice.textContent = state.price;
-    if (selectedColorName) selectedColorName.textContent = state.colorName;
-    if (selectedSize) selectedSize.textContent = state.size;
-    if (selectedColorLabel) selectedColorLabel.textContent = state.colorName;
-    if (selectedSizeLabel) selectedSizeLabel.textContent = state.size;
-    if (stickyProductName) stickyProductName.textContent = state.productName;
-    if (stickySelection) stickySelection.textContent = `${state.colorName} / ${state.size}`;
-    if (stickyPrice) stickyPrice.textContent = state.price;
+  renderCart(elements);
+  setCartOpen(true, elements);
+  showToast(`${state.productName} / ${state.size} added`);
+}
+
+function updateCartQuantity(event, elements) {
+  const button = event.target.closest("[data-cart-action]");
+  if (!button) return;
+
+  const item = state.cartItems.find((cartItem) => cartItem.id === button.dataset.key);
+  if (!item) return;
+
+  if (button.dataset.cartAction === "increase") {
+    item.quantity += 1;
+  } else {
+    item.quantity -= 1;
   }
+
+  state.cartItems = state.cartItems.filter((cartItem) => cartItem.quantity > 0);
+  renderCart(elements);
+}
+
+function renderSelection() {
+  const elements = getShopElements();
+  if (elements.productName) elements.productName.textContent = state.productName;
+  if (elements.productPrice) elements.productPrice.textContent = state.price;
+  if (elements.selectedColorName) elements.selectedColorName.textContent = state.colorName;
+  if (elements.selectedSize) elements.selectedSize.textContent = state.size;
+  if (elements.selectedColorLabel) elements.selectedColorLabel.textContent = state.colorName;
+  if (elements.selectedSizeLabel) elements.selectedSizeLabel.textContent = state.size;
+  if (elements.stickyProductName) elements.stickyProductName.textContent = state.productName;
+  if (elements.stickySelection) elements.stickySelection.textContent = `${state.colorName} / ${state.size}`;
+  if (elements.stickyPrice) elements.stickyPrice.textContent = state.price;
+}
+
+function renderCart(elements = getShopElements()) {
+  const itemCount = getCartItemCount();
+  const total = state.cartItems.reduce((sum, item) => sum + item.priceValue * item.quantity, 0);
+
+  if (elements.cartCount) elements.cartCount.textContent = String(itemCount);
+  if (elements.cartTotal) elements.cartTotal.textContent = formatWon(total);
+  if (elements.cartEmpty) elements.cartEmpty.hidden = itemCount > 0;
+  if (elements.checkoutButton) elements.checkoutButton.disabled = itemCount === 0;
+  if (!elements.cartItems) return;
+
+  elements.cartItems.innerHTML = state.cartItems
+    .map(
+      (item) => `
+        <article class="cart-line">
+          <div class="cart-thumb" style="--item-color: ${item.color}"></div>
+          <div>
+            <h3>${escapeHtml(item.name)}</h3>
+            <p>${escapeHtml(item.colorName)} / ${escapeHtml(item.size)}</p>
+            <strong>${escapeHtml(item.price)}</strong>
+          </div>
+          <div class="quantity-control" aria-label="${escapeHtml(item.name)} quantity">
+            <button type="button" data-cart-action="decrease" data-key="${escapeHtml(item.id)}" aria-label="Decrease quantity">-</button>
+            <span>${item.quantity}</span>
+            <button type="button" data-cart-action="increase" data-key="${escapeHtml(item.id)}" aria-label="Increase quantity">+</button>
+          </div>
+        </article>
+      `,
+    )
+    .join("");
+}
+
+function setCartOpen(isOpen, elements = getShopElements()) {
+  state.isCartOpen = isOpen;
+  document.body.classList.toggle("cart-open", isOpen);
+  elements.cartDrawer?.classList.toggle("is-open", isOpen);
+  elements.cartDrawer?.setAttribute("aria-hidden", String(!isOpen));
+  elements.cartToggle?.setAttribute("aria-expanded", String(isOpen));
+
+  if (elements.cartOverlay) {
+    elements.cartOverlay.hidden = !isOpen;
+  }
+}
+
+function syncPressedStates(elements) {
+  elements.swatches.forEach((button) => {
+    button.setAttribute("aria-pressed", String(button.classList.contains("is-active")));
+  });
+  elements.sizeButtons.forEach((button) => {
+    button.setAttribute("aria-pressed", String(button.classList.contains("is-active")));
+  });
+}
+
+function getCartItemCount() {
+  return state.cartItems.reduce((sum, item) => sum + item.quantity, 0);
+}
+
+function parseWon(price) {
+  return Number(price.replace(/[^\d]/g, "")) || 0;
+}
+
+function formatWon(value) {
+  return `₩${value.toLocaleString("ko-KR")}`;
+}
+
+function showToast(message) {
+  const toast = document.querySelector("#toast");
+  if (!toast) return;
+
+  toast.textContent = message;
+  toast.classList.add("is-visible");
+  window.clearTimeout(toastTimer);
+  toastTimer = window.setTimeout(() => {
+    toast.classList.remove("is-visible");
+  }, 1700);
+}
+
+function escapeHtml(value) {
+  return String(value).replace(/[&<>"']/g, (character) => {
+    const entities = {
+      "&": "&amp;",
+      "<": "&lt;",
+      ">": "&gt;",
+      '"': "&quot;",
+      "'": "&#039;",
+    };
+    return entities[character];
+  });
 }
 
 function getColorName(color) {
